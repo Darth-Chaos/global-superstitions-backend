@@ -1,26 +1,61 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateSuperstitionDto } from './dto/create-superstition.dto';
 import { UpdateSuperstitionDto } from './dto/update-superstition.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { Superstition } from './entities/superstition.entity';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class SuperstitionsService {
+  constructor(
+    @InjectModel(Superstition.name)
+    private readonly superstitionModel: Model<Superstition>,
+  ) {}
+
   create(createSuperstitionDto: CreateSuperstitionDto) {
-    return 'This action adds a new superstition';
+    const createdSuperstition = new this.superstitionModel(
+      createSuperstitionDto,
+    );
+
+    return createdSuperstition.save();
   }
 
-  findAll() {
-    return `This action returns all superstitions`;
+  findAll(sortByDate: boolean): Promise<Array<Superstition>> {
+    const superstitions = this.superstitionModel.find();
+
+    if (sortByDate == true) superstitions.sort({ origin_date: 1 });
+
+    return superstitions.exec();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} superstition`;
+  findAllByCountry(country: string): Promise<Array<Superstition>> {
+    return this.superstitionModel.find({ region: { country } }).exec();
   }
 
-  update(id: number, updateSuperstitionDto: UpdateSuperstitionDto) {
-    return `This action updates a #${id} superstition`;
+  findOneById(id: string): Promise<Superstition | null> {
+    return this.superstitionModel.findOne({ _id: id }).exec();
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} superstition`;
+  findOneByName(name: string): Promise<Superstition | null> {
+    return this.superstitionModel.findOne({ name }).exec();
+  }
+
+  update(
+    id: string,
+    updateSuperstitionDto: UpdateSuperstitionDto,
+  ): Promise<Superstition> {
+    const updatedSuperstition = this.superstitionModel.findByIdAndUpdate(
+      id,
+      { $set: updateSuperstitionDto },
+      { new: true, runValidators: true },
+    );
+
+    return updatedSuperstition;
+  }
+
+  remove(id: string): Promise<Superstition> {
+    const deletedSuperstition = this.superstitionModel.findByIdAndDelete(id);
+
+    return deletedSuperstition;
   }
 }
