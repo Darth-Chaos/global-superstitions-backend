@@ -1,38 +1,16 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Uso de la Plataforma
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Este backend está construido gracias a librerías y frameworks como NestJS para la creación del backend como tal, o Mongoose el cual es un ORM que ayudó a la conexión con la base de datos de MongoDB, además de otras librerías que ayudaron a realizar los procesos de validación y verificación de los datos ingresados al API construida.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Instalación
 
-## Description
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
+Para esto, solo es necesario descargar una copia (ya sea mediante clonación con Git o mediante descarga directa). Después instalar las librerías necesarias para utilizar el proyecto.
 
 ```bash
 $ npm install
 ```
 
-## Compile and run the project
+Por último, para correr el proyecto, solo es necesario:
 
 ```bash
 # development
@@ -45,55 +23,166 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
-## Run tests
+**Nota:** No se ha probado la versión de producción, por lo que, el proyecto actualmente no está destinado a esto, sino a algo más bien académico y demostrativo de como crear una conexión a una base de datos MongoDB usando la arquitectura modular en un modelo de 3 capas.
+
+**Nota:** Para más conocimiento en todas las librerías y Framworks utilizados, además de documentación, por favor, remitirse a la [página de NestJS](https://docs.nestjs.com).
+
+## Manejo y Explicación
+
+Para el manejo de esta API fueron creados 5 endpoints, los cuales sirven para explicar directamente como se emplea un CRUD en _MongoDB_ utilizando _NestJS_.
+
+**Nota:** Cabe aclarar que todos los llamados aquí utilizados pueden ser modificados para integrar otras funcionalidad como busquedas puntuales, ordenamiento, filtros, etc., con el fin de enriquecer las queries realizadas en MongoDB, además, en medio de su modificación en el servicio, estás funciones pueden ser utilizadas muy similar a como serían sus homologas en MongoDB.
+
+### Create
+
+Utilizando el llamado ```/api/v1/superstitions/create``` se podrá crear un nuevo documento dentro de la base de datos.
+
+_Ejemplo de petición create dentro del entorno del backend_
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+curl --location 'http://localhost:3000/api/v1/superstitions/create' \
+--header 'Content-Type: application/json' \
+--data '{
+    "name": "Romper un espejo",
+    "description": "Se dice que romper un espejo trae siete años de mala suerte.",
+    "positive_effect": false,
+    "origin_date": "1800-01-01",
+    "region": {
+      "name": "Europa Occidental",
+      "country": { "name": "Francia" }
+    },
+    "cults": [
+      { "name": "Creyentes en la mala suerte" },
+      { "name": "Grupos supersticiosos medievales" }
+    ],
+    "events": [
+      {
+        "name": "Espejo roto en una boda",
+        "description": "Un espejo se rompió accidentalmente en una ceremonia.",
+        "event_date": "1905-05-20"
+      }
+    ],
+    "sources": [
+      {
+        "title": "Historia de la superstición",
+        "author": "John Smith",
+        "cite": "Capítulo 3, página 45",
+        "url": "http://example.com/supersticiones"
+      }
+    ]
+}'
 ```
 
-## Deployment
+Este comando tiene el siguiente equivalente como query de MongoDB:
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+```js
+db.collection.insertOne({
+  "name": "Romper un espejo",
+    "description": "Se dice que romper un espejo trae siete años de mala suerte.",
+    "positive_effect": false,
+    "origin_date": "1800-01-01",
+    "region": {
+      "name": "Europa Occidental",
+      "country": { "name": "Francia" }
+    },
+    "cults": [
+      { "name": "Creyentes en la mala suerte" },
+      { "name": "Grupos supersticiosos medievales" }
+    ],
+    "events": [
+      {
+        "name": "Espejo roto en una boda",
+        "description": "Un espejo se rompió accidentalmente en una ceremonia.",
+        "event_date": "1905-05-20"
+      }
+    ],
+    "sources": [
+      {
+        "title": "Historia de la superstición",
+        "author": "John Smith",
+        "cite": "Capítulo 3, página 45",
+        "url": "http://example.com/supersticiones"
+      }
+    ]
+})
+```
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+## Read
+
+Para la lectura fueron habilitados 2 endpoints, uno para lectura singular de documentos (1 doc) y otro para la traida de varios documentos a la vez.
+
+### Lectura Singular
+
+_Lectura de un documento por ID gracias al API_
 
 ```bash
-$ npm install -g mau
-$ mau deploy
+curl --location 'http://localhost:3000/api/v1/superstitions/673be8fc35484fe1b96b81f9'
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+_Ejecución en MongoDB_
 
-## Resources
+```js
+db.collection.findOne(
+  {},
+  { _id: 673be8fc35484fe1b96b81f9 }
+)
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+### Lectura Plural
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+_Lectura de un muchos documentos por ID gracias al API_
 
-## Support
+```bash
+curl --location 'http://localhost:3000/api/v1/superstitions?sort_by_date=true'
+```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+_Ejecución en MongoDB_
 
-## Stay in touch
+```js
+db.collection.find().sort({ origin_date: 1 })
+```
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## Update
 
-## License
+Para la actualización fue habilitado un endpoint, el cual actualiza y retorna un objeto según el ID enviado.
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+_Actualización del documento en el API_
+
+```bash
+curl --location --request PATCH 'http://localhost:3000/api/v1/superstitions/update/id/673be725c85e9281d809e4c2' \
+--header 'Content-Type: application/json' \
+--data '{
+    "name": "Ejemplo actualizado 1"
+}'
+```
+
+_Ejecución en MongoDB_
+
+```js
+db.collection.findOneAndUpdate(
+  { _id: 673be725c85e9281d809e4c2 },
+  { $set: {
+    "name": "Ejemplo actualizado 1"
+  }}
+)
+```
+
+## Delete
+
+Para el borrado fue habilitado un endpoint, el cual elimina y retorna un objeto según el ID enviado. 
+
+_Actualización del documento en el API_
+
+```bash
+curl --location --request DELETE 'http://localhost:3000/api/v1/superstitions/delete/id/673beb90d68ea23ef9afc3d5'
+```
+
+_Ejecución en MongoDB_
+
+```js
+db.collection.findOneAndDelete(
+  { _id: 673be725c85e9281d809e4c2 }
+)
+```
+
+Cabe aclarar, de nuevo, que los métodos utilizados por el ORM Mongoose permiten realizar todo tipo de filtros y cambios que se requiran, con lo que, esto aquí mostrado puede ser fácilmente modificado (o pueden ser anexionados nuevos endpoints) que requieran un manejo un poco más complejo en cuanto a las requests.
