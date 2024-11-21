@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
-import { Country, CountrySchema } from './country.entity'; // Asegúrate de importar la entidad Country
+import { Country, CountrySchema } from './country.entity';
 
 export type RegionDocument = HydratedDocument<Region, RegionDocumentOverride>;
 

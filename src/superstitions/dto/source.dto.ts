@@ -1,15 +1,12 @@
-import { IsNotEmpty, IsOptional } from 'class-validator';
+import { IsString } from 'class-validator';
 
-export class SourceDTO {
-  @IsNotEmpty()
-  readonly title: string;
+export class SourceDto {
+  @IsString()
+  type: string;
 
-  @IsOptional()
-  readonly author?: string;
+  @IsString()
+  title: string;
 
-  @IsNotEmpty()
-  readonly cite: string;
-
-  @IsOptional()
-  readonly url?: string;
+  @IsString()
+  author: string;
 }

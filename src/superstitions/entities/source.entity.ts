@@ -12,11 +12,8 @@ export class Source {
   @Prop()
   author?: string;
 
-  @Prop({ required: true })
-  cite: string;
-
   @Prop()
-  url?: string;
+  type: string;
 
   @Prop({ type: Types.ObjectId, ref: 'Superstition', required: true })
   superstition: Superstition;

@@ -8,9 +8,6 @@ export type CultDocument = HydratedDocument<Cult>;
 export class Cult {
   @Prop({ required: true })
   name: string;
-
-  @Prop({ type: Types.ObjectId, ref: 'Superstition', required: true })
-  superstition: Superstition;
 }
 
 export const CultSchema = SchemaFactory.createForClass(Cult);

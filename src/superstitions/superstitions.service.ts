@@ -1,61 +1,104 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model, RootFilterQuery, SortOrder } from 'mongoose';
+import { Superstition } from './entities/superstition.entity';
 import { CreateSuperstitionDto } from './dto/create-superstition.dto';
 import { UpdateSuperstitionDto } from './dto/update-superstition.dto';
-import { InjectModel } from '@nestjs/mongoose';
-import { Superstition } from './entities/superstition.entity';
-import { Model } from 'mongoose';
 
 @Injectable()
 export class SuperstitionsService {
   constructor(
     @InjectModel(Superstition.name)
-    private readonly superstitionModel: Model<Superstition>,
+    private superstitionModel: Model<Superstition>,
   ) {}
 
-  create(createSuperstitionDto: CreateSuperstitionDto) {
-    const createdSuperstition = new this.superstitionModel(
-      createSuperstitionDto,
-    );
+  // Crear una superstición
+  async create(createSuperstitionDto: CreateSuperstitionDto) {
+    const superstition = new this.superstitionModel(createSuperstitionDto);
 
-    return createdSuperstition.save();
+    return superstition.save();
   }
 
-  findAll(sortByDate: boolean): Promise<Array<Superstition>> {
-    const superstitions = this.superstitionModel.find();
+  // Obtener supersticiones con filtros, búsqueda, y paginación
+  async findAll(
+    search: string,
+    regionId: string,
+    countryName: string,
+    sortBy: string,
+    page: number,
+    limit: number,
+  ) {
+    const query: RootFilterQuery<Superstition> = {};
 
-    if (sortByDate == true) superstitions.sort({ origin_date: 1 });
+    // Búsqueda por nombre o descripción
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { origin: { $regex: search, $options: 'i' } },
+        { belief_groups: { $regex: search, $options: 'i' } },
+      ];
+    }
 
-    return superstitions.exec();
+    // Filtrar por región
+    if (regionId) {
+      query.region_id = regionId;
+    }
+
+    // Filtrar por país (relación indirecta con regiones)
+    if (countryName) {
+      query['region.countries.name'] = { $regex: countryName, $options: 'i' };
+    }
+
+    // Ordenar
+    const sort: { [key: string]: SortOrder } =
+      sortBy === 'date' ? { created_at: -1 } : { name: 1 };
+
+    // Paginación
+    const skip = (page - 1) * limit;
+
+    // Realizar la consulta
+    const [data, total] = await Promise.all([
+      this.superstitionModel
+        .find(query)
+        .sort(sort)
+        .skip(skip)
+        .limit(limit)
+        .populate('region_id') // Para incluir datos de la región
+        .exec(),
+      this.superstitionModel.countDocuments(query).exec(),
+    ]);
+
+    return {
+      data,
+      total,
+      page,
+      lastPage: Math.ceil(total / limit),
+    };
   }
 
-  findAllByCountry(country: string): Promise<Array<Superstition>> {
-    return this.superstitionModel.find({ region: { country } }).exec();
-  }
-
-  findOneById(id: string): Promise<Superstition | null> {
-    return this.superstitionModel.findOne({ _id: id }).exec();
-  }
-
-  findOneByName(name: string): Promise<Superstition | null> {
-    return this.superstitionModel.findOne({ name }).exec();
-  }
-
-  update(
-    id: string,
-    updateSuperstitionDto: UpdateSuperstitionDto,
-  ): Promise<Superstition> {
-    const updatedSuperstition = this.superstitionModel.findByIdAndUpdate(
+  // Actualizar una superstición
+  async update(id: string, updateSuperstitionDto: UpdateSuperstitionDto) {
+    const updatedSuperstition = await this.superstitionModel.findByIdAndUpdate(
       id,
-      { $set: updateSuperstitionDto },
-      { new: true, runValidators: true },
+      updateSuperstitionDto,
+      { new: true },
     );
+
+    if (!updatedSuperstition) {
+      throw new BadRequestException('La superstición no fue encontrada');
+    }
 
     return updatedSuperstition;
   }
 
-  remove(id: string): Promise<Superstition> {
-    const deletedSuperstition = this.superstitionModel.findByIdAndDelete(id);
+  // Eliminar una superstición
+  async delete(id: string) {
+    const deleted = await this.superstitionModel.findByIdAndDelete(id);
 
-    return deletedSuperstition;
+    if (!deleted) {
+      throw new BadRequestException('La superstición no fue encontrada');
+    }
+
+    return deleted;
   }
 }

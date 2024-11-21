@@ -1,40 +1,38 @@
 import {
-  IsDateString,
+  IsString,
   IsNotEmpty,
-  IsNotEmptyObject,
   IsOptional,
+  IsArray,
+  ValidateNested,
+  IsMongoId,
 } from 'class-validator';
-import { RegionDTO } from './region.dto';
-import { CultDTO } from './cult.dto';
-import { Expose } from 'class-transformer';
-import { EventDTO } from './event.dto';
-import { SourceDTO } from './source.dto';
+import { Type } from 'class-transformer';
+import { SourceDto } from './source.dto';
 
 export class CreateSuperstitionDto {
+  @IsString()
   @IsNotEmpty()
-  readonly name: string;
+  name: string;
 
-  @IsOptional()
-  readonly description?: string;
-
+  @IsString()
   @IsNotEmpty()
-  @Expose({ name: 'positive_effect' })
-  readonly positiveEffect: boolean = false;
+  origin: string;
 
+  @IsString()
   @IsOptional()
-  @Expose({ name: 'origin_date' })
-  @IsDateString()
-  readonly originDate?: Date;
+  description?: string;
 
-  @IsOptional()
-  readonly region?: RegionDTO;
+  @IsMongoId()
+  @IsNotEmpty()
+  region_id: string;
 
+  @IsArray()
   @IsOptional()
-  readonly cults?: Array<CultDTO>;
+  belief_groups?: string[];
 
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => SourceDto)
   @IsOptional()
-  readonly events?: Array<EventDTO>;
-
-  @IsOptional()
-  sources?: Array<SourceDTO>;
+  sources?: SourceDto[];
 }
