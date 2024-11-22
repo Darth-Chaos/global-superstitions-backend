@@ -14,7 +14,7 @@ export class Region {
   name: string;
 
   @Prop(CountrySchema)
-  country: Country;
+  countries: Country[];
 }
 
 export const RegionSchema = SchemaFactory.createForClass(Region);
