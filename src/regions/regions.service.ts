@@ -10,7 +10,15 @@ export class RegionsService {
   constructor(@InjectModel(Region.name) private regionModel: Model<Region>) {}
 
   async findAll() {
-    return this.regionModel.find().exec();
+    const data = await this.regionModel.find().exec();
+    const total = await this.regionModel.countDocuments().exec();
+
+    return {
+      data,
+      total,
+      page: 0,
+      lastPage: 0,
+    };
   }
 
   async create(createRegionDto: CreateRegionDto) {
