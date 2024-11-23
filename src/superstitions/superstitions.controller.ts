@@ -32,6 +32,7 @@ export class SuperstitionsController {
     @Query('page') page = 1,
     @Query('limit') limit = 10,
   ) {
+    console.log(search);
     return this.superstitionService.findAll(
       search,
       regionId,

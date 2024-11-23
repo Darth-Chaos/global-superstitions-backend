@@ -68,6 +68,7 @@ export class SuperstitionsService {
       this.superstitionModel.countDocuments(query).exec(),
     ]);
 
+    console.log(data);
     return {
       data,
       total,
